@@ -1,13 +1,32 @@
-# Androidify on Android
+# 😸 Ozymandias Cat-Bots
+Turn any cat into a custom Android bot with Gemini
 
-![androidify banner](/art/androidify_banner.webp)
+> Forked from Google's official android/androidify — rebuilt for cat ladies, by a cat lady.
 
-The Android bot is a beloved mascot for Android users and developers, with previous versions of the
-bot builder being very popular - we decided that this year we’d rebuild the bot maker from the
-ground up, using the latest technology backed by Gemini. Today we are releasing a new open source
-app, Androidify, for learning how to build powerful AI driven experiences on Android using the
-latest technologies such as Jetpack Compose, Gemini API through Firebase AI Logic SDK, CameraX, and
-Navigation 3.
+### What is this?
+Ozymandias Cat-Bots takes Google's Androidify — which builds Android bots with AI — and asks: What if it was cats?
+
+Point your camera at your cat, let Gemini + Imagen work, get a custom cat-bot avatar.
+
+### Under the Hood
+- Gemini API via Firebase AI Logic SDK (Imagen + Gemini)
+- Jetpack Compose - modern Android UI
+- Navigation 3 + CameraX + Media3
+- MVVM / Clean Architecture
+
+### Getting Started
+1. Clone: git clone https://github.com/eleniiacovides26-tech/androidify.git
+2. Open in Android Studio
+3. Add google-services.json to /app
+4. Enable Firebase AI Logic
+
+### Why?
+I'm Helen - 13x Google Cloud Certified, AI Developer, building the Ozymandias Vault (persistent memory on Vertex AI). This is my playground for bringing Ozymandias to mobile.
+
+### Availability Note
+Background vibe uses gemini-2.0-flash-preview-image-generation which is not yet supported in South Africa / EMEA. Swap to gemini-2.0-flash for SA.
+
+Built in Pretoria, South Africa, with cats on the keyboard.
 
 Note: This app is still under development. This sample app is currently using a standard Imagen
 model, but we've been working on a fine-tuned model that's trained specifically on all of the pieces
