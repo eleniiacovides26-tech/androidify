@@ -16,9 +16,9 @@ jobs:
       - name: Build AAB
         run: |
           chmod +x ./gradlew
-          ./gradlew :app:bundleRelease --no-daemon
+          ./gradlew :app:bundleDebug --no-daemon
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: androidify-aab-for-play-store
-          path: app/build/outputs/bundle/release/*.aab
+          name: androidify-aab
+          path: app/build/outputs/bundle/debug/*.aab
