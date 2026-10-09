@@ -1,5 +1,4 @@
-jobs:
-  name: Build AAB
+name: Build AAB
 on:
   workflow_dispatch:
 jobs:
