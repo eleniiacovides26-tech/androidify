@@ -9,15 +9,41 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Create google-services file
+      - name: Create google-services.json
         run: |
-          echo '{"project_info":{"project_number":"123","project_id":"dummy","storage_bucket":"dummy.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:abc","android_client_info":{"package_name":"com.google.android.apps.androidify"}},"oauth_client":[],"api_key":[{"current_key":"dummy"}]}]}' > app/google-services.json
-      - name: Build Release AAB
+          cat > app/google-services.json <<'EOF'
+          {
+            "project_info": {
+              "project_number": "123456789012",
+              "project_id": "androidify-dummy",
+              "storage_bucket": "androidify-dummy.appspot.com"
+            },
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:123456789012:android:abc123",
+                "android_client_info": { "package_name": "com.google.android.apps.androidify" }
+              },
+              "oauth_client": [],
+              "api_key": [{ "current_key": "AIzaSyDummyKey1234567890" }]
+            }],
+            "configuration_version": "1"
+          }
+          EOF
+      - name: Build AAB
         run: |
           chmod +x ./gradlew
-          ./gradlew bundleRelease -PCI_BUILD=true --stacktrace
+          chmod +x ./build_presubmit.sh || true
+          chmod +x ./build.sh || true
+          if [ -f ./build_presubmit.sh ]; then
+            ./build_presubmit.sh
+          else
+            ./gradlew bundleRelease -PCI_BUILD=true --stacktrace
+          fi
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: androidify-release-aab
-          path: app/build/outputs/bundle/release/*.aab
+          name: androidify-aab
+          path: |
+            app/build/outputs/bundle/release/*.aab
+            **/build/outputs/bundle/release/*.aab
+            artifacts/**/*.aab
