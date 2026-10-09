@@ -1,49 +1,24 @@
 name: Build AAB for Play Store
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Create google-services.json
-        run: |
-          cat > app/google-services.json <<'EOF'
-          {
-            "project_info": {
-              "project_number": "123456789012",
-              "project_id": "androidify-dummy",
-              "storage_bucket": "androidify-dummy.appspot.com"
-            },
-            "client": [{
-              "client_info": {
-                "mobilesdk_app_id": "1:123456789012:android:abc123",
-                "android_client_info": { "package_name": "com.google.android.apps.androidify" }
-              },
-              "oauth_client": [],
-              "api_key": [{ "current_key": "AIzaSyDummyKey1234567890" }]
-            }],
-            "configuration_version": "1"
-          }
-          EOF
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
       - name: Build AAB
         run: |
           chmod +x ./gradlew
-          chmod +x ./build_presubmit.sh || true
-          chmod +x ./build.sh || true
-          if [ -f ./build_presubmit.sh ]; then
-            ./build_presubmit.sh
-          else
-            ./gradlew bundleRelease -PCI_BUILD=true --stacktrace
-          fi
+          ./gradlew :app:bundleRelease --no-daemon
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: androidify-aab
-          path: |
-            app/build/outputs/bundle/release/*.aab
-            **/build/outputs/bundle/release/*.aab
-            artifacts/**/*.aab
+          name: androidify-aab-for-play-store
+          path: app/build/outputs/bundle/release/*.aab
