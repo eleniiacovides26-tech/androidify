@@ -1,4 +1,4 @@
-Perfect! You're there. Now paste this into that box where it says "Enter file contents here":
+
 name: Build AAB for Play Store
 on: workflow_dispatch
 jobs:
@@ -21,4 +21,4 @@ jobs:
         with:
           name: androidify-release-aab
           path: app/build/outputs/bundle/release/*.aab
-After pasting, tap *Commit changes...* → *Commit changes*
+
