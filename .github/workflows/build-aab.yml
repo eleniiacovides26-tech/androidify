@@ -9,16 +9,15 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Create dummy google-services
+      - name: Create google-services file
         run: |
           echo '{"project_info":{"project_number":"123","project_id":"dummy","storage_bucket":"dummy.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:abc","android_client_info":{"package_name":"com.google.android.apps.androidify"}},"oauth_client":[],"api_key":[{"current_key":"dummy"}]}]}' > app/google-services.json
       - name: Build Release AAB
         run: |
           chmod +x ./gradlew
-          ./gradlew bundleRelease --stacktrace
+          ./gradlew bundleRelease -PCI_BUILD=true --stacktrace
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: androidify-release-aab
           path: app/build/outputs/bundle/release/*.aab
-
