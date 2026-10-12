@@ -10,9 +10,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - uses: gradle/actions/setupgradle@v3
+      - uses: gradle/actions/setupgradle@v4
       - run: chmod +x gradlew
       - run: ./gradlew bundleRelease
       - uses: actions/uploadartifact@v4
         with:
-          name: aabpath:app/build/outputs/bundle/release/b
+          name: aab
+             path:app/build/outputs/bundle/release/b
