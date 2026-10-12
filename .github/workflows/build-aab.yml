@@ -13,7 +13,7 @@ jobs:
       - uses: gradle/actions/setupgradle@v4
       - run: chmod +x gradlew
       - run: ./gradlew bundleRelease
-      - uses: actions/uploadartifact@v4
+      - uses: actions/uploadar/atifact@v4
         with:
           name: aab
              path:app/build/outputs/bundle/release/b
