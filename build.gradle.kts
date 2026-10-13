@@ -37,8 +37,11 @@ subprojects {
             licenseHeaderFile(rootProject.file("spotless/copyright.kt"))
         }
         kotlinGradle {
-            target("*.kts")
-            // Look for the first line that doesn't have a block comment (assumed to be the license)
+    create("benchmark") {
+        initWith(getByName("release"))
+        matchingFallbacks += listOf("release")
+        isDebuggable = false
+    }
             licenseHeaderFile(rootProject.file("spotless/copyright.kts"), "(^(?![\\/ ]\\*).*$)")
         }
         format("xml") {
