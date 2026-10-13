@@ -38,7 +38,7 @@ plugins {
             versionNameSuffix = "-debug"
         }
         create("benchmark") {
-            initWith(buildTypes.getByName("release"))
+        initWith(getByName("release"))
             matchingFallbacks += listOf("release")
             isDebuggable = false
         }
