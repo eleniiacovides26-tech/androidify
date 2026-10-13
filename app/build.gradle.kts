@@ -36,11 +36,7 @@ plugins {
     buildTypes {
         debug {
             versionNameSuffix = "-debug"
-        }
-        create("benchmark") {
-      `initWith(getByName("release"))     matchingFallbacks += listOf("release")
-            isDebuggable = false
-        }
+        
         release {
             isShrinkResources = true
             isMinifyEnabled = true
