@@ -1,81 +1,160 @@
-name: Build and Test
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+plugins {
+    alias(libs.plugins.androidify.androidApplication)
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.crashlytics)
+    alias(libs.plugins.baselineprofile)
+    id("com.google.android.gms.oss-licenses-plugin")
+    id("org.spdx.sbom") version "0.9.0"
+}
 
-# Ensure that only the latest commit is tested if pushing rapidly
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+android {
+    namespace = "com.android.developers.androidify"
+    defaultConfig {
+        applicationId = "com.android.developers.androidify"
+        versionCode = libs.versions.appVersionCode.get().toInt()
+        versionName = libs.versions.appVersionName.get()
+    }
 
-jobs:
-  build_test_lint:
-    name: "Build, Test, and Lint"
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    permissions:
-      contents: write # Needed for git-auto-commit
+    buildTypes {
+        debug {
+            versionNameSuffix = "-debug"
+        }
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+        }
+        release {
+            isShrinkResources = true
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+            configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = true
+            }
+            // Conditionally apply signingConfig for release builds
+            // If the 'CI_BUILD' project property is set to 'true', do not assign a signingConfig.
+            // Otherwise, (e.g., for local Android Studio builds), sign with the debug key.
+            if (project.findProperty("CI_BUILD")?.toString()?.toBoolean() == true) {
+                // For CI builds, we want an unsigned artifact.
+                // No signingConfig is assigned here.
+                // The bundleRelease task will produce an unsigned AAB.
+                println("CI_BUILD property detected. Release build will be unsigned by Gradle.")
+            } else {
+                // For local builds (not CI), sign with the debug key to allow easy deployment.
+                // This ensures you can select the "release" variant in Android Studio and run it.
+                println("Not a CI_BUILD or CI_BUILD property not set. Signing release build with debug key.")
+                signingConfig = signingConfigs.getByName("debug")
+            }
+        }
+    }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+    // To avoid packaging conflicts when using bouncycastle
+    packaging {
+        resources {
+            excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
+        }
+    }
+}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+baselineProfile() {
+    dexLayoutOptimization = true
+}
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
+spdxSbom {
+    targets {
+        // create a target named "release",
+        // this is used for the task name (spdxSbomForRelease)
+        // and output file (release.spdx.json)
+        create("release") {
+            configurations.set(listOf("releaseRuntimeClasspath"))
+        }
+    }
+}
+dependencies {
+    debugImplementation(libs.leakcanary.android)
+    implementation(libs.androidx.app.startup)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.hilt.android)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.profileinstaller)
+    ksp(libs.hilt.compiler)
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        # Add cache-encryption-key if you use cache
-        # with:
-        #   cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.timber)
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.app.check)
+    implementation(libs.firebase.config)
+    implementation(libs.firebase.appcheck.debug)
 
-      - name: Decode google-services.json
-        env:
-          DEBUG_GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.DEBUG_GOOGLE_SERVICES_JSON_BASE64 }}
-        run: |
-          if [ -z "$DEBUG_GOOGLE_SERVICES_JSON_BASE64" ]; then
-            echo "DEBUG_GOOGLE_SERVICES_JSON not set, using test file"
-            cp test-google-services.json app/google-services.json
-          else
-            echo "Decoding DEBUG_GOOGLE_SERVICES_JSON"
-            echo $DEBUG_GOOGLE_SERVICES_JSON_BASE64 | base64 --decode > app/google-services.json
-          fi
+    implementation(libs.androidx.window)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.google.oss.licenses) {
+        exclude(group = "androidx.appcompat")
+    }
 
-      - name: Apply Spotless
-        run: ./gradlew spotlessApply
+    implementation(projects.feature.camera)
+    implementation(projects.feature.creation)
+    implementation(projects.feature.home)
+    implementation(projects.feature.results)
 
-      - name: Commit Spotless changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: 🤖 Apply Spotless formatting
-          file_pattern: '**/*.kt **/*.kts **/*.java **/*.xml'
+    implementation(projects.core.theme)
+    implementation(projects.core.util)
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+    // library must be compileOnly, see
+    // https://developer.android.com/develop/xr/jetpack-xr-sdk/getting-started#enable-minification
+    compileOnly(libs.androidx.xr.extensions)
 
-      - name: Run local unit tests
-        run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
+    baselineProfile(projects.benchmark)
 
-      - name: Check lint
-        run: ./gradlew lintDebug --no-daemon --stacktrace
+    // Android Instrumented Tests
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(projects.core.testing)
+    kspAndroidTest(libs.hilt.compiler)
 
-      - name: Upload build outputs (APKs)
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: APKs
-          path: '**/build/outputs/apk/debug/*.apk'
+    debugImplementation(libs.androidx.ui.test.manifest)
+}
 
-      - name: Upload JVM local test results
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: local-test-results
-          path: '**/build/test-results/test
+androidComponents {
+    beforeVariants { variantBuilder ->
+        variantBuilder.enableAndroidTest = false
+    }
+}
