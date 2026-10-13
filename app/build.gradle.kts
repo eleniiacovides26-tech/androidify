@@ -136,8 +136,6 @@ dependencies {
     // https://developer.android.com/develop/xr/jetpack-xr-sdk/getting-started#enable-minification
     compileOnly(libs.androidx.xr.extensions)
 
-    baselineProfile(projects.benchmark)
-
     // Android Instrumented Tests
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
