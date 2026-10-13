@@ -38,8 +38,7 @@ plugins {
             versionNameSuffix = "-debug"
         }
         create("benchmark") {
-        initWith(getByName("release"))
-            matchingFallbacks += listOf("release")
+      `initWith(getByName("release"))`     matchingFallbacks += listOf("release")
             isDebuggable = false
         }
         release {
