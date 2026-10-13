@@ -18,14 +18,14 @@ import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
 plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.crashlytics)
+plugins {
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.hilt)
     alias(libs.plugins.baselineprofile)
     id("com.google.android.gms.oss-licenses-plugin")
     id("org.spdx.sbom") version "0.9.0"
 }
-
-android {
     namespace = "com.android.developers.androidify"
     defaultConfig {
         applicationId = "com.android.developers.androidify"
