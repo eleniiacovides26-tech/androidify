@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
-
-plugins {
     alias(libs.plugins.androidify.androidApplication)
     alias(libs.plugins.serialization)
     alias(libs.plugins.kotlin.ksp)
