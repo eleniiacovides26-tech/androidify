@@ -153,6 +153,6 @@ dependencies {
 
 androidComponents {
     beforeVariants { variantBuilder ->
-        variantBuilder.enableAndroidTest = false
+        http://variantBuilder.enableAndroidTest = false
     }
 }
